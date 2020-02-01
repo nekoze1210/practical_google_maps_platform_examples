@@ -1,0 +1,56 @@
+[
+  {
+    "lat": 35.7329854,
+    "lng": 139.7128128,
+    "category": "SevenEleven",
+    "label": "7"
+  },
+  {
+    "lat": 35.732115,
+    "lng": 139.712918,
+    "category": "FamilyMart",
+    "label": "F"
+  },
+  {
+    "lat": 35.733033,
+    "lng": 139.711028,
+    "category": "FamilyMart",
+    "label": "F"
+  },
+  {
+    "lat": 35.728321,
+    "lng": 139.708981,
+    "category": "FamilyMart",
+    "label": "F"
+  },
+  {
+    "lat": 35.733033,
+    "lng": 139.711028,
+    "category": "FamilyMart",
+    "label": "F"
+  },
+  {
+    "lat": 35.730571,
+    "lng": 139.707634,
+    "category": "FamilyMart",
+    "label": "F"
+  },
+  {
+    "lat": 35.729748,
+    "lng": 139.709693,
+    "category": "Lawson",
+    "label": "L"
+  },
+  {
+    "lat": 35.729864,
+    "lng": 139.707243,
+    "category": "Lawson",
+    "label": "L"
+  },
+  {
+    "lat": 35.730961,
+    "lng": 139.70888,
+    "category": "DailyYamazaki",
+    "label": "ヤ"
+  }
+]
