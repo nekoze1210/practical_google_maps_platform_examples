@@ -5,7 +5,7 @@ import * as VueGoogleMaps from 'vue2-google-maps'
 Vue.config.productionTip = false
 Vue.use(VueGoogleMaps, {
   load: {
-    key: process.env.API_KEY,
+    key: process.env.VUE_APP_GMAP_API_KEY,
     libraries: 'places,geometry,visualization' // カンマ区切りの文字列で libraries を指定する
   },
   installComponents: true
