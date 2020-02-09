@@ -17,7 +17,7 @@ export default class Maps {
       center: firstViewCenterCoordinates,
       zoom: 15,
       mapTypeId: this.google.maps.MapTypeId.ROADMAP,
-      disableDefaultUI: true,
+      disableDefaultUI: false,
       clickableIcons: false
     })
 

@@ -1,5 +1,5 @@
 import MapOverlay from '../mapOverlay'
-import { buildLatLngArray } from '../../utils/latLng'
+// import { buildLatLngArray } from '../../utils/latLng'
 import Marker from './marker'
 
 export default class Polyline extends MapOverlay {
@@ -7,14 +7,14 @@ export default class Polyline extends MapOverlay {
   constructor(google, map, path, options = {}) {
     super(google, map)
     this.path = path
-    this.mvcArray = buildLatLngArray(this.google, this.path)
+    // this.mvcArray = buildLatLngArray(this.google, this.path)
     this.options = options
   }
 
   draw() {
     new this.google.maps.Polyline({
       map: this.map,
-      path: this.mvcArray,
+      path: this.path,
       ...this.options
     })
   }

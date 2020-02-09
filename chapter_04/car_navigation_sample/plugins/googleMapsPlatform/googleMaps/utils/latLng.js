@@ -5,7 +5,7 @@ export function buildLatLng(google, lat, lng) {
 
 // [{lat: float, lng: float }]
 export function buildLatLngArray(google, coordinatesArray) {
-  let r = coordinatesArray.map(coordinates => {
+  const r = coordinatesArray.map((coordinates) => {
     return new google.maps.LatLng(coordinates.lat, coordinates.lng)
   })
   return new google.maps.MVCArray(r)
