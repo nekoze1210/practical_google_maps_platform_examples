@@ -1,55 +1,64 @@
 <template>
   <el-container>
-    <sidebar
-      :routes="routes"
-      :selectedRoute="selectedRoute"
-      :origin="origin"
-      :destination="destination"
-      :isNavigationStarted="isNavigationStarted"
-      @click-route="selectRoute"
-      @click-search-button="searchRoutes"
-      @click-start-navigation="startNavigation"
-      @input-origin="(value) => (origin = value)"
-      @input-destination="(value) => (destination = value)"
-    />
-    <el-main style="padding: 0">
-      <div id="map"></div>
+    <sidebar>
+      <template #directionForm>
+        <direction-form
+          :origin="origin"
+          :destination="destination"
+          @input-origin="(input) => (origin = input)"
+          @input-destination="(input) => (destination = input)"
+          @click-search-button="searchRoutes"
+        />
+      </template>
+      <template #routePanel>
+        <route-panel
+          :routes="routes"
+          :selectedRoute="selectedRoute"
+          :isNavigationStarted="isNavigationStarted"
+          @click-route="selectRoute"
+          @click-start-navigation="startNavigation"
+        />
+      </template>
+    </sidebar>
+    <el-main>
+      <div id="map" />
     </el-main>
   </el-container>
 </template>
 
 <script>
 import Sidebar from '~/components/Sidebar.vue'
-import loadGoogleMaps from '~/plugins/googleMapsPlatform/scripts/loadGoogleMaps.js'
+import DirectionForm from '~/components/DirectionForm.vue'
+import RoutePanel from '~/components/RoutePanel.vue'
+import loadGoogleMaps from '~/plugins/googleMapsPlatform/loadGoogleMaps.js'
 
 const apiOptions = {
   libraries: ['geometry', 'places', 'visualization']
 }
 
 export default {
-  components: { Sidebar },
+  components: { Sidebar, DirectionForm, RoutePanel },
   data() {
     return {
       map: null,
       google: null,
-      origin: '池袋駅',
-      destination: '大塚駅',
+      origin: '',
+      destination: '',
       routes: [],
       selectedRoute: null,
-      timer: null,
-      isNavigationStarted: false
+      navigationTimer: null,
+      isNavigationStarted: false,
+      carIcon: null
     }
   },
   mounted() {
     const element = this.$el.querySelector('#map')
-    loadGoogleMaps(process.env.API_KEY, apiOptions, element).then(
-      (googleMap) => {
-        this.map = googleMap.map
-        this.google = googleMap.google
-        this.directionService = new this.google.maps.DirectionsService()
-        this.directionsRenderer = new this.google.maps.DirectionsRenderer()
-      }
-    )
+    loadGoogleMaps(apiOptions, element).then((result) => {
+      this.map = result.map
+      this.google = result.google
+      this.directionService = new this.google.maps.DirectionsService()
+      this.directionsRenderer = new this.google.maps.DirectionsRenderer()
+    })
   },
   methods: {
     selectRoute(route) {
@@ -60,12 +69,17 @@ export default {
       this.selectedRoute = null
       this.isNavigationStarted = false
       this.directionsRenderer.setPanel(null)
-      clearInterval(this.timer)
+      if (this.carIcon) {
+        this.carIcon.setMap(null)
+        this.carIcon = null
+      }
+      clearInterval(this.navigationTimer)
     },
     searchRoutes() {
       this.resetDestinations()
       if (!(this.origin && this.destination)) {
         alert('出発地・目的地を入力してください。')
+        return
       }
       const request = {
         origin: this.origin,
@@ -84,26 +98,12 @@ export default {
               distance: route.legs[0].distance,
               duration: route.legs[0].duration,
               startAddress: route.legs[0].start_address,
+              startLocation: route.legs[0].start_location,
               endAddress: route.legs[0].end_address,
               overviewPolyline: route.overview_polyline,
               steps: this.google.maps.geometry.encoding.decodePath(
                 route.overview_polyline
-              ),
-              carIcon: new this.google.maps.Marker({
-                map: this.map,
-                position: route.legs[0].start_location,
-                icon: {
-                  path: this.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                  scale: 6,
-                  rotation: 0,
-                  fillColor: '#DC5846',
-                  fillOpacity: 0.7,
-                  strokeColor: '#DC5846',
-                  strokeWeight: 2
-                },
-                visible: false,
-                zIndex: 999
-              })
+              )
             }
           })
           this.directionsRenderer.set('directions', null)
@@ -116,12 +116,25 @@ export default {
     },
     startNavigation() {
       this.isNavigationStarted = true
-      this.selectedRoute.carIcon.setVisible()
+      this.carIcon = new this.google.maps.Marker({
+        map: this.map,
+        position: this.selectedRoute.startLocation,
+        icon: {
+          path: this.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+          scale: 6,
+          rotation: 0,
+          fillColor: '#DC5846',
+          fillOpacity: 0.7,
+          strokeColor: '#DC5846',
+          strokeWeight: 2
+        },
+        zIndex: 999
+      })
       this.directionsRenderer.setPanel(
         this.$el.querySelector('#route-panel-contents')
       )
       let i = 1
-      this.timer = setInterval(() => {
+      this.navigationTimer = setInterval(() => {
         this.moveIcon(
           this.selectedRoute.steps[i - 1],
           this.selectedRoute.steps[i]
@@ -129,16 +142,16 @@ export default {
         i++
 
         if (i >= this.selectedRoute.steps.length) {
-          clearInterval(this.timer)
+          clearInterval(this.navigationTimer)
         }
-      }, 500)
+      }, 1000)
     },
     moveIcon(currentPosition, nextPosition) {
       const angle = this.google.maps.geometry.spherical.computeHeading(
         currentPosition,
         nextPosition
       )
-      this.selectedRoute.carIcon.setIcon({
+      this.carIcon.setIcon({
         path: this.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
         scale: 6,
         rotation: angle,
@@ -147,13 +160,16 @@ export default {
         strokeColor: '#ff0000',
         strokeWeight: 2
       })
-      this.selectedRoute.carIcon.setPosition(nextPosition)
+      this.carIcon.setPosition(nextPosition)
     }
   }
 }
 </script>
 
 <style>
+.el-main {
+  padding: 0;
+}
 #map {
   position: fixed !important;
   height: 100% !important;
